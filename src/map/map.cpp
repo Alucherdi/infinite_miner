@@ -8,7 +8,7 @@ Map::Map() {
 }
 
 void Map::draw() {
-    for (int x = 0; x < SCREEN_WIDTH / this->bw; x++) {
+    /*for (int x = 0; x < SCREEN_WIDTH / this->bw; x++) {
         for (int y = 0; y < SCREEN_HEIGHT / this->bh; y++) {
             this->draw_block(
                 this->wInit + x * 10,
@@ -16,7 +16,8 @@ void Map::draw() {
                 this->bw, this->bh
             );
         }
-    }
+    }*/
+    this->draw_block(100, 100, 200, 200);
 }
 
 void Map::draw_block(int x, int y, int w, int h) {
