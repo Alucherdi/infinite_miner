@@ -6,6 +6,7 @@
 
 class Collision {
     public:
+        // Point to Rectangle
         static bool check(const Vector2 &a, const Rectangle &b) {
             return (
                 a.x >= b.x &&
@@ -15,6 +16,7 @@ class Collision {
            );
         }
 
+        // Rectangle to Rectangle
         static bool check(const Rectangle &a, const Rectangle &b) {
             return (
                 a.x + a.width  > b.x &&
@@ -24,6 +26,7 @@ class Collision {
            );
         }
 
+        // Ray to Rectangle
         static bool check(
             const Vector2 &origin,
             const Vector2 &direction,
@@ -55,15 +58,12 @@ class Collision {
 
             if (far_hit < 0) return false;
 
-            // parametric line equation
-            // TODO: Is it x + a & y + a? x + a only or y + a only?
-            // near direction times whole? 
             contact_point = Vector2 {
                 (origin.x + near_hit) * direction.x,
                 (origin.y + near_hit) * direction.y
             };
 
-            if (near_col.x < near_col.y) {
+            if (near_col.x > near_col.y) {
                 if (direction.x < 0) { 
                     contact_normal = (Vector2) { 1, 0 };
                 } else {
@@ -76,6 +76,28 @@ class Collision {
                     contact_normal = (Vector2) { 0, -1 };
                 }
             }
+
+            return true;
+        }
+
+        // Moving rectangles
+        static bool check(
+            const Rectangle &a,
+            const Rectangle &b,
+            const Vector2 &a_vel,
+            Vector2 &contact_point,
+            Vector2 &contact_normal,
+            float &col_time
+        ) {
+            if (a_vel.x == 0 && a_vel.y == 0)
+                return false;
+
+            Rectangle expanded_target;
+            expanded_target.x = b.x - a.width / 2;
+            expanded_target.y = b.y - a.height / 2;
+
+            expanded_target.width = b.width + a.width;
+            expanded_target.height = b.height + a.height;
 
 
             return true;

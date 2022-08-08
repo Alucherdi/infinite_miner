@@ -15,7 +15,7 @@ void Player::draw() {
 }
 
 void Player::update() {
-    this->apply_gravity();
+    //this->apply_gravity();
     this->handle_inputs();
 }
 

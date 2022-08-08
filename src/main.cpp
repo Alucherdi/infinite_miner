@@ -26,16 +26,16 @@ int main() {
 
     while (!WindowShouldClose()) {
         player.update();
-        camera.target = player.pos;
+        //camera.target = player.pos;
 
         ClearBackground(WHITE);
 
-        BeginMode2D(camera);
+        BeginDrawing();
+        //BeginMode2D(camera);
             map.draw();
             player.draw();
-        EndMode2D();
+        //EndMode2D();
 
-        BeginDrawing();
         EndDrawing();
     }
 
