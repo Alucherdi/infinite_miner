@@ -59,8 +59,8 @@ class Collision {
             if (far_hit < 0) return false;
 
             contact_point = Vector2 {
-                (origin.x + near_hit) * direction.x,
-                (origin.y + near_hit) * direction.y
+                origin.x + near_hit * direction.x,
+                origin.y + near_hit * direction.y
             };
 
             if (near_col.x > near_col.y) {
@@ -87,20 +87,39 @@ class Collision {
             const Vector2 &a_vel,
             Vector2 &contact_point,
             Vector2 &contact_normal,
-            float &col_time
+            float &contact_time,
+            float &elapsed_time
         ) {
             if (a_vel.x == 0 && a_vel.y == 0)
                 return false;
 
             Rectangle expanded_target;
-            expanded_target.x = b.x - a.width / 2;
-            expanded_target.y = b.y - a.height / 2;
+            expanded_target.x = b.x - (a.width / 2);
+            expanded_target.y = b.y - (a.height / 2);
 
             expanded_target.width = b.width + a.width;
             expanded_target.height = b.height + a.height;
 
+            if (
+                check(
+                    (Vector2) {
+                        a.x + (a.width / 2),
+                        a.y + (a.height / 2)
+                    },
+                    (Vector2) {
+                        a_vel.x * elapsed_time,
+                        a_vel.y * elapsed_time
+                    },
+                    expanded_target,
+                    contact_point,
+                    contact_normal,
+                    contact_time
+                )
+            ) {
+                return (contact_time >= 0.0f && contact_time < 1.0f);
+            }
 
-            return true;
+            return false;
         }
 };
 

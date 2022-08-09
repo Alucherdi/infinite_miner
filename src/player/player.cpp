@@ -17,18 +17,26 @@ void Player::draw() {
 void Player::update() {
     //this->apply_gravity();
     this->handle_inputs();
+
 }
 
 void Player::handle_inputs() {
-    if (IsKeyDown(KEY_A)) {
-        this->pos.x -= 1;
-    }
-    if (IsKeyDown(KEY_D)) {
-        this->pos.x += 1;
+    if (
+        IsKeyDown(KEY_A) ||
+        IsKeyDown(KEY_D)
+    ) {
+        this->vel.x = IsKeyDown(KEY_A) ? -1 : 1;
+    } else {
+        this->vel.x = 0;
     }
 
-    if (IsKeyDown(KEY_SPACE)) {
-        this->vel.y = -1.0f;
+    if (
+        IsKeyDown(KEY_W) ||
+        IsKeyDown(KEY_S)
+    ) {
+        this->vel.y = IsKeyDown(KEY_W) ? -1 : 1;
+    } else {
+        this->vel.y = 0;
     }
 }
 
