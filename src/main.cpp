@@ -6,6 +6,7 @@
 #include "config/setup.hpp"
 #include "map/map.hpp"
 #include "physics/collision.hpp"
+#include "physics/rigidbody.hpp"
 #include "player/player.hpp"
 
 int main() {
@@ -14,13 +15,29 @@ int main() {
         SCREEN_TITLE
     );
 
+    struct {
+        RigidBody rb{};
+    } player;
 
-    Player player(Vector2{ 0, 0 }, Vector2{ 30.0f, 30.0f });
-    Map map{};
+    player.rb.body = (Rectangle) {
+        0.0f, 0.0f, 20.0f, 20.0f
+    };
+
+    player.rb.vel = (Vector2) {
+        0.0f, 0.0f
+    };
+
+    struct {
+        RigidBody rb{};
+    } block;
+
+    block.rb.body = (Rectangle) {
+        100.0f, 100.0f, 30.0f, 30.0f
+    };
 
     std::string iscol = "";
     Camera2D camera = { 0 };
-    camera.target = player.pos;
+    camera.target = (Vector2) { player.rb.body.x , player.rb.body.y };
     camera.offset = (Vector2) { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f };
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
@@ -29,49 +46,48 @@ int main() {
     SetTargetFPS(144);
 
     while (!WindowShouldClose()) {
-        float dt = 1.0f / GetFPS();
+        float dt = GetFrameTime();
         ClearBackground(WHITE);
 
-        player.update();
-
-        Vector2 cp, cn;
-        float ct;
-        for (int i = 0; i < map.map.size(); i++) {
-            if (
-                Collision::check(
-                    (Rectangle) {
-                        player.pos.x, player.pos.y,
-                        player.size.x, player.size.y
-                    },
-                    map.map[i],
-                    player.vel,
-                    cp, cn, ct, dt
-                )
-            ) {
-                player.vel = (Vector2) {
-                    cn.x * std::abs(player.vel.x) * (1 - ct),
-                    cn.y * std::abs(player.vel.y) * (1 - ct)
-                };
-            }
+        if (
+            IsKeyDown(KEY_A) ||
+            IsKeyDown(KEY_D)
+        ) {
+            player.rb.vel.x = IsKeyDown(KEY_A) ? -100.0f : 100.0f;
+        } else {
+            player.rb.vel.x = 0.0f;
         }
 
-        player.pos = (Vector2) {
-            player.pos.x + player.vel.x,
-            player.pos.y + player.vel.y
-        };
+        if (
+            IsKeyPressed(KEY_SPACE)
+        ) {
+            player.rb.vel.y = -500.0f;
+        }
 
-        camera.target = player.pos;
-        BeginMode2D(camera);
-            map.draw();
-            player.draw();
-        EndMode2D();
+        if (player.rb.vel.y < 100.0f) player.rb.vel.y += 5.0f;
+
+        Collision::resolve_dynamic_ray_collision(
+            &player.rb,
+            &block.rb,
+            dt
+        );
 
         BeginDrawing();
+
+            BeginMode2D(camera);
+                DrawRectangleRec(block.rb.body, BLUE);
+                DrawRectangleRec(player.rb.body, RED);
+            EndMode2D();
+
             DrawText(TextFormat("%02.02f", dt), 0, 0, 8, BLACK);
-            DrawText(TextFormat("player.pos: %02.02f, %02.02f", player.pos.x, player.pos.y), 0, 10, 8, BLACK);
-            DrawText(TextFormat("player.vel: %02.02f, %02.02f", player.vel.x, player.vel.y), 0, 20, 8, BLACK);
-            DrawText(TextFormat("contact_normal: %02.02f, %02.02f", cn.x, cn.y), 0, 30, 8, BLACK);
+            DrawText(TextFormat("player.pos: %02.02f, %02.02f", player.rb.body.x, player.rb.body.y), 0, 10, 8, BLACK);
+            DrawText(TextFormat("player.vel: %02.02f, %02.02f", player.rb.vel.x, player.rb.vel.y), 0, 20, 8, BLACK);
         EndDrawing();
+
+        player.rb.body.x += player.rb.vel.x * dt;
+        player.rb.body.y += player.rb.vel.y * dt;
+
+        camera.target = (Vector2) { player.rb.body.x , player.rb.body.y };
     }
 
     CloseWindow();
