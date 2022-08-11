@@ -1,95 +1,94 @@
-#include <memory>
 #include <raylib.h>
-#include <raymath.h>
-#include <string>
+#include <iostream>
 
-#include "config/setup.hpp"
-#include "map/map.hpp"
-#include "physics/collision.hpp"
-#include "physics/rigidbody.hpp"
-#include "player/player.hpp"
+struct v2 {
+    float x, y;
+
+    // another vector
+    inline v2 operator = (const v2 o) {
+        return (v2) { this->x = o.x, this->y = o.y };
+    }
+
+    inline v2 operator + (const v2 o) {
+        return (v2) { this->x + o.x, this->y + o.y };
+    }
+
+    inline v2 operator += (const v2 o) {
+        return (v2) { this->x += o.x, this->y += o.y };
+    }
+
+    inline v2 operator - (const v2 o) {
+        return (v2) { this->x - o.x, this->y - o.y };
+    }
+
+    inline v2 operator * (const v2 o) {
+        return (v2) { this->x * o.x, this->y * o.y };
+    }
+
+    inline v2 operator / (const v2 o) {
+        return (v2) { this->x / o.x, this->y / o.y };
+    }
+
+    // float value
+    inline v2 operator + (const float o) {
+        return (v2) { this->x + o, this->y + o };
+    }
+
+    inline v2 operator += (const float o) {
+        return (v2) { this->x += o, this->y += o };
+    }
+
+    inline v2 operator - (const float o) {
+        return (v2) { this->x - o, this->y - o };
+    }
+
+    inline v2 operator * (const float o) {
+        return (v2) { this->x * o, this->y * o };
+    }
+
+    inline v2 operator / (const float o) {
+        return (v2) { this->x / o, this->y / o };
+    }
+
+    Vector2 trlv() { return (Vector2) {
+        this->x, this->y
+    };}
+};
+
+struct entity {
+    v2 p, s, v;
+};
 
 int main() {
-    InitWindow(
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SCREEN_TITLE
-    );
+    InitWindow(300, 300, "");
+    SetTargetFPS(60);
 
-    struct {
-        RigidBody rb{};
-    } player;
+    float ac = 50.0f;
+    float dt = 0.0f;
 
-    player.rb.body = (Rectangle) {
-        0.0f, 0.0f, 20.0f, 20.0f
-    };
+    entity p { { 0.0f, 0.0f }, { 5.0f, 5.0f }, { 0.0f, 0.0f }};
 
-    player.rb.vel = (Vector2) {
-        0.0f, 0.0f
-    };
-
-    struct {
-        RigidBody rb{};
-    } block;
-
-    block.rb.body = (Rectangle) {
-        100.0f, 100.0f, 30.0f, 30.0f
-    };
-
-    std::string iscol = "";
-    Camera2D camera = { 0 };
-    camera.target = (Vector2) { player.rb.body.x , player.rb.body.y };
-    camera.offset = (Vector2) { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
-
-
-    SetTargetFPS(144);
+    entity b { { 30.0f, 100.0f }, { 10.0f, 10.0f }, { 0.0f, 0.0f }};
 
     while (!WindowShouldClose()) {
-        float dt = GetFrameTime();
-        ClearBackground(WHITE);
+        dt = GetFrameTime();
 
-        if (
-            IsKeyDown(KEY_A) ||
-            IsKeyDown(KEY_D)
-        ) {
-            player.rb.vel.x = IsKeyDown(KEY_A) ? -100.0f : 100.0f;
-        } else {
-            player.rb.vel.x = 0.0f;
-        }
+        if (IsKeyDown(KEY_A)) p.v.x = -ac;
+        else if (IsKeyDown(KEY_D)) p.v.x = ac;
+        else p.v.x = 0;
 
-        if (
-            IsKeyPressed(KEY_SPACE)
-        ) {
-            player.rb.vel.y = -500.0f;
-        }
-
-        if (player.rb.vel.y < 100.0f) player.rb.vel.y += 5.0f;
-
-        Collision::resolve_dynamic_ray_collision(
-            &player.rb,
-            &block.rb,
-            dt
-        );
+        if (IsKeyDown(KEY_W)) p.v.y = -ac;
+        else if (IsKeyDown(KEY_S)) p.v.y = ac;
+        else p.v.y = 0;
 
         BeginDrawing();
-
-            BeginMode2D(camera);
-                DrawRectangleRec(block.rb.body, BLUE);
-                DrawRectangleRec(player.rb.body, RED);
-            EndMode2D();
-
-            DrawText(TextFormat("%02.02f", dt), 0, 0, 8, BLACK);
-            DrawText(TextFormat("player.pos: %02.02f, %02.02f", player.rb.body.x, player.rb.body.y), 0, 10, 8, BLACK);
-            DrawText(TextFormat("player.vel: %02.02f, %02.02f", player.rb.vel.x, player.rb.vel.y), 0, 20, 8, BLACK);
+            ClearBackground(WHITE);
+            DrawRectangleV(p.p.trlv(), p.s.trlv(), RED);
+            DrawRectangleV(b.p.trlv(), b.s.trlv(), RED);
         EndDrawing();
 
-        player.rb.body.x += player.rb.vel.x * dt;
-        player.rb.body.y += player.rb.vel.y * dt;
-
-        camera.target = (Vector2) { player.rb.body.x , player.rb.body.y };
+        p.p += p.v * dt;
     }
 
     CloseWindow();
-    return 0;
 }

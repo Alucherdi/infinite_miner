@@ -1,10 +1,12 @@
 #ifndef IM_COLLISION_L
 #define IM_COLLISION_L
 
-#include "physics/rigidbody.hpp"
+#include "rigidbody.hpp"
 #include <cmath>
 #include <memory>
 #include <raylib.h>
+
+#include <iostream>
 
 class Collision {
     public:
@@ -139,25 +141,23 @@ class Collision {
         static bool resolve_dynamic_ray_collision(
             RigidBody* dynamic_body,
             RigidBody* static_body,
-            const float time_step
+            const float time_step,
+            Vector2* cp
         ) {
-            Vector2 contact_point, cn;
+            Vector2  cn;
             float contact_time = 0.0f;
 
             if (check_collision(
                 dynamic_body, *static_body,
-                contact_point, cn, contact_time,
+                *cp, cn, contact_time,
                 time_step
             )) {
-                if (cn.y > 0) dynamic_body->contact[0] = static_body->body;
-                if (cn.x < 0) dynamic_body->contact[1] = static_body->body;
-                if (cn.y < 0) dynamic_body->contact[2] = static_body->body;
-                if (cn.x > 0) dynamic_body->contact[3] = static_body->body;
-
                 dynamic_body->vel = (Vector2) {
                     cn.x * std::abs(dynamic_body->vel.x) * (1 - contact_time),
                     cn.y * std::abs(dynamic_body->vel.y) * (1 - contact_time)
                 };
+
+                std::cout << contact_time << "\n";
             }
             return true;
         }
