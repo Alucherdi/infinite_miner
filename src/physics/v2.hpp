@@ -81,7 +81,7 @@ struct v2 {
     }
 
     bool operator<(const v2& o) {
-        return (this->x < o.x && this->y < o.y);
+        return (this->x < o.x || this->y < o.y);
     }
 
     static v2 max(const v2& a, const v2& b) {

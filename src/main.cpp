@@ -19,7 +19,7 @@ int main() {
     float jf = 800.0f;
 
     entity p({ 0.0f, 0.0f }, { 30.0f, 30.0f });
-    entity mouse_selection;
+    entity ms;
 
     Camera2D camera = { 0 };
     camera.target = p.p.trlv();
@@ -33,34 +33,51 @@ int main() {
     std::vector<entity> blocks;
     v2 swap;
 
+    v2 mmax;
+    v2 mmin;
+    v2 mousepos;
+    v2 offset;
+
     while (!WindowShouldClose()) {
         dt = GetFrameTime();
+        offset.x = camera.offset.x - camera.target.x;
+        offset.y = camera.offset.y - camera.target.y;
+        mousepos = GetMousePosition();
+        mousepos.x -= offset.x;
+        mousepos.y -= offset.y;
 
         if (IsKeyDown(KEY_A)) p.v.x = -ac;
         else if (IsKeyDown(KEY_D)) p.v.x = ac;
         else p.v.x = 0;
 
         if (IsKeyPressed(KEY_SPACE)) p.v.y = -jf;
-        //if (p.v.y < 400.0f) p.v.y += g;
+        if (p.v.y < 400.0f) p.v.y += g;
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            mouse_selection.p = GetMousePosition();
-            mouse_selection.p.x -= camera.offset.x;
-            mouse_selection.p.y -= camera.offset.y;
+            ms.p = GetMousePosition();
+            ms.p.x -= offset.x;
+            ms.p.y -= offset.y;
+
+            mmin = ms.p;
         }
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            mouse_selection.s = GetMousePosition();
-            mouse_selection.s.x -= camera.offset.x;
-            mouse_selection.s.y -= camera.offset.y;
-
-            mouse_selection.s -= mouse_selection.p;
-
-            if (mouse_selection.s < mouse_selection.p) {
-                //mouse_selection.s.x = std::max(
-                //);
+            ms.s = GetMousePosition();
+            ms.s.x -= offset.x;
+            ms.s.y -= offset.y;
+            mmax = ms.s;
+            
+            if (ms.s < ms.p) {
+                mmax = v2::max(ms.s, ms.p);
+                mmin = v2::min(ms.s, ms.p);
             }
 
+            ms.s -= ms.p;
+            mmax -= mmin;
+        }
+
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            blocks.push_back(entity(mmin, mmax));
         }
 
         for (entity block : blocks) {
@@ -74,9 +91,10 @@ int main() {
                 for (entity block : blocks) {
                     DrawRectangleV(block.p.trlv(), block.s.trlv(), BLACK);
                 }
-                DrawRectangleV(p.p.trlv(), p.s.trlv(), WHITE);
+                DrawRectangleV(p.p.trlv(), p.s.trlv(), GREEN);
 
-                DrawRectangleV(mouse_selection.p.trlv(), mouse_selection.s.trlv(), BLACK);
+                DrawRectangleV(mmin.trlv(), mmax.trlv(), BLACK);
+                DrawCircleV(mousepos.trlv(), 3.0f, GREEN);
             EndMode2D();
         EndDrawing();
 
